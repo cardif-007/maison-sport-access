@@ -1,0 +1,22 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "api/sheets.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "*.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "*.png",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    { "src": "/api/sheets", "dest": "/api/sheets.js" },
+    { "src": "/(.*\\.png)",  "dest": "/$1" },
+    { "src": "/",            "dest": "/index.html" }
+  ]
+}

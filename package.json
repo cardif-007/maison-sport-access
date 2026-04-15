@@ -1,0 +1,9 @@
+{
+  "name": "maison-sport-access",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Maison Sport — Control de Acceso con QR",
+  "engines": {
+    "node": ">=18"
+  }
+}
