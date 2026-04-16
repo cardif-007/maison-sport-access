@@ -7,7 +7,8 @@
 var SHEET_ALUMNOS_ID     = '1LsLOwM7MaeWLHbNyBmZ5YDfv57J0w6tdGUZUGClCij4';
 var SHEET_ASISTENCIAS_ID = '1CI4cFoixKyZxsFtYs3f34N-LudZUN1T3Zx4QGg33yiY';
 
-var TAB_ALUMNOS     = 'Alumnos';
+// Nombres posibles para la pestaña de alumnos (se prueba en orden)
+var TABS_ALUMNOS_CANDIDATOS = ['Alumnos', 'alumnos', 'Hoja1', 'Hoja 1', 'Sheet1', 'Sheet 1', 'Socios', 'socios'];
 var TAB_ASISTENCIAS = 'Asistencias';
 
 // Columnas en sheet Alumnos (base 1)
@@ -33,10 +34,25 @@ function _handle(e) {
     if (action === 'search')   return buscarPorNombre(p.q || '');
     if (action === 'qr')       return buscarPorQR(p.q || '');
     if (action === 'register') return registrarAsistencia(p.qrId || '', p.nombre || '');
+    if (action === 'debug')    return debugInfo();
     return { error: 'Acción no válida: ' + action };
   } catch (err) {
-    return { error: err.message };
+    return { error: err.message, stack: err.stack };
   }
+}
+
+// ── DEBUG — devuelve nombres de pestañas y primeras filas ─────
+function debugInfo() {
+  var ss     = SpreadsheetApp.openById(SHEET_ALUMNOS_ID);
+  var sheets = ss.getSheets().map(function(s) { return s.getName(); });
+  var hoja   = _getHojaAlumnos();
+  var preview = hoja ? hoja.getRange(1, 1, Math.min(3, hoja.getLastRow()), 5).getValues() : [];
+  return {
+    hojas      : sheets,
+    hojaUsada  : hoja ? hoja.getName() : null,
+    filas      : hoja ? hoja.getLastRow() : 0,
+    preview    : preview
+  };
 }
 
 // ── BUSCAR POR NOMBRE ─────────────────────────────────────────
@@ -44,7 +60,7 @@ function buscarPorNombre(query) {
   query = query.toLowerCase().trim();
   if (query.length < 2) return [];
 
-  var datos = _getDatos();
+  var datos  = _getDatos();
   var result = [];
 
   for (var i = 1; i < datos.length; i++) {
@@ -73,8 +89,15 @@ function buscarPorQR(qrId) {
 
 // ── REGISTRAR ASISTENCIA ──────────────────────────────────────
 function registrarAsistencia(qrId, nombre) {
-  var hoja  = SpreadsheetApp.openById(SHEET_ASISTENCIAS_ID)
-                            .getSheetByName(TAB_ASISTENCIAS);
+  var ss   = SpreadsheetApp.openById(SHEET_ASISTENCIAS_ID);
+  var hoja = ss.getSheetByName(TAB_ASISTENCIAS);
+
+  // Si no existe la pestaña, crearla con encabezados
+  if (!hoja) {
+    hoja = ss.insertSheet(TAB_ASISTENCIAS);
+    hoja.appendRow(['QR_ID', 'Nombre', 'Fecha', 'Hora']);
+  }
+
   var ahora = new Date();
   var tz    = Session.getScriptTimeZone();
   var fecha = Utilities.formatDate(ahora, tz, 'dd/MM/yyyy');
@@ -84,10 +107,26 @@ function registrarAsistencia(qrId, nombre) {
 }
 
 // ── HELPERS ───────────────────────────────────────────────────
+
+// Encuentra la hoja de alumnos probando múltiples nombres
+function _getHojaAlumnos() {
+  var ss = SpreadsheetApp.openById(SHEET_ALUMNOS_ID);
+
+  // 1. Probar nombres candidatos
+  for (var i = 0; i < TABS_ALUMNOS_CANDIDATOS.length; i++) {
+    var h = ss.getSheetByName(TABS_ALUMNOS_CANDIDATOS[i]);
+    if (h) return h;
+  }
+
+  // 2. Fallback: primera hoja disponible
+  var hojas = ss.getSheets();
+  return hojas.length > 0 ? hojas[0] : null;
+}
+
 function _getDatos() {
-  return SpreadsheetApp.openById(SHEET_ALUMNOS_ID)
-                       .getSheetByName(TAB_ALUMNOS)
-                       .getDataRange().getValues();
+  var hoja = _getHojaAlumnos();
+  if (!hoja) throw new Error('No se encontró la hoja de alumnos');
+  return hoja.getDataRange().getValues();
 }
 
 function _toObj(fila) {
