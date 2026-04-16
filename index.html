@@ -70,7 +70,7 @@ html,body{
   width:100%;
 }
 .logo-wrap img{
-  height:280px;object-fit:contain;
+  height:clamp(220px, 42vw, 340px);object-fit:contain;
   filter:drop-shadow(0 0 32px rgba(0,0,0,.95));
 }
 .logo-sub{
@@ -485,8 +485,19 @@ function openScan(){
     if(!cams||!cams.length){ toast('No se encontró cámara'); go(sHome); return; }
     var camId=cams[cams.length-1].id;
 
+    // Tamaño de caja adaptado a la pantalla
+    var boxSize = Math.min(Math.round(window.innerWidth * 0.72), 300);
+
     qr.start(camId,
-      {fps:12,qrbox:{width:230,height:230},aspectRatio:1},
+      {
+        fps: 24,
+        qrbox: { width: boxSize, height: boxSize },
+        aspectRatio: 1,
+        // Usa el BarcodeDetector nativo del navegador si está disponible (mucho más rápido)
+        experimentalFeatures: { useBarCodeDetectorIfSupported: true },
+        // Solo QR codes — descarta otros formatos y acelera el escaneo
+        formatsToSupport: [ Html5QrcodeSupportedFormats.QR_CODE ]
+      },
       function(decoded){
         if(!scanOn) return;
         scanOn=false;
