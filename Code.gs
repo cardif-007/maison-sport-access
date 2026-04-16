@@ -8,14 +8,15 @@ var SHEET_ALUMNOS_ID     = '1LsLOwM7MaeWLHbNyBmZ5YDfv57J0w6tdGUZUGClCij4';
 var SHEET_ASISTENCIAS_ID = '1CI4cFoixKyZxsFtYs3f34N-LudZUN1T3Zx4QGg33yiY';
 
 // Nombres posibles para la pestaña de alumnos (se prueba en orden)
-var TABS_ALUMNOS_CANDIDATOS = ['Alumnos', 'alumnos', 'Hoja1', 'Hoja 1', 'Sheet1', 'Sheet 1', 'Socios', 'socios'];
+var TABS_ALUMNOS_CANDIDATOS = ['CLIENTES', 'Clientes', 'clientes', 'Alumnos', 'alumnos', 'Hoja1', 'Hoja 1', 'Sheet1', 'Sheet 1', 'Socios'];
 var TAB_ASISTENCIAS = 'Asistencias';
 
-// Columnas en sheet Alumnos (base 1)
+// Columnas en sheet CLIENTES (base 1)
+// A=Nombre | B=Teléfono | C=Sucursal | D=Fecha Inicio | E=Fecha Vencimiento | F=Diferencias_Dias | G=Estado | H=QR_ID
 var COL_NOMBRE    = 1; // A
-var COL_QR_ID     = 2; // B
-var COL_DIFF_DIAS = 3; // C
-var COL_ESTADO    = 4; // D
+var COL_QR_ID     = 8; // H
+var COL_DIFF_DIAS = 6; // F
+var COL_ESTADO    = 7; // G
 
 // ── ENTRY POINT ───────────────────────────────────────────────
 function doGet(e) {
